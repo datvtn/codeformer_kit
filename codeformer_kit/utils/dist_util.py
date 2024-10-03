@@ -4,7 +4,7 @@ import subprocess
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
-from typing import Optional
+from typing import Optional, Tuple
 
 
 def init_dist(launcher: str, backend: str = 'nccl', **kwargs) -> None:
@@ -75,7 +75,7 @@ def _init_dist_slurm(backend: str, port: Optional[int] = None) -> None:
     dist.init_process_group(backend=backend)
 
 
-def get_dist_info() -> tuple[int, int]:
+def get_dist_info() -> Tuple[int, int]:
     """Get the rank and world size for the current distributed process.
 
     Returns:
