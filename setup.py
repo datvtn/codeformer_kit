@@ -158,8 +158,7 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    cmdclass={"upload": UploadCommand},
+    cmdclass={"upload": UploadCommand, 'build_ext': BuildExtension},
     setup_requires=['cython', 'numpy'],
     ext_modules=ext_modules,
-    cmdclass={'build_ext': BuildExtension},
 )
