@@ -1,0 +1,11 @@
+pycocotools
+addict
+joblib
+numpy
+opencv-python
+pandas
+Pillow
+scikit-image
+scikit-learn
+scipy
+matplotlib
