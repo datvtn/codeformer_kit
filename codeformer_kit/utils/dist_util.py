@@ -79,7 +79,7 @@ def get_dist_info() -> Tuple[int, int]:
     """Get the rank and world size for the current distributed process.
 
     Returns:
-        tuple[int, int]: The rank of the current process and the world size.
+        Tuple[int, int]: The rank of the current process and the world size.
             If distributed training is not initialized, returns (0, 1).
     """
     if dist.is_available() and dist.is_initialized():

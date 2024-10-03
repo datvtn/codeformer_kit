@@ -349,7 +349,7 @@ class DCNv2Pack(ModulatedDeformConvPack):
 
         return self._apply_deform_conv(x, offset, mask)
 
-    def _split_and_process_offsets(self, out: Tensor) -> tuple[Tensor, Tensor]:
+    def _split_and_process_offsets(self, out: Tensor) -> Tuple[Tensor, Tensor]:
         """
         Split the output into offsets and mask, and apply sigmoid to the mask.
 
@@ -357,7 +357,7 @@ class DCNv2Pack(ModulatedDeformConvPack):
             out (Tensor): The output from the offset convolution.
 
         Returns:
-            tuple[Tensor, Tensor]: Processed offsets and masks.
+            Tuple[Tensor, Tensor]: Processed offsets and masks.
         """
         o1, o2, mask = torch.chunk(out, 3, dim=1)
         offset = torch.cat((o1, o2), dim=1)

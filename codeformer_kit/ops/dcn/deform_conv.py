@@ -249,10 +249,10 @@ class DeformConvPack(DeformConv):
     Args:
         in_channels (int): Same as nn.Conv2d.
         out_channels (int): Same as nn.Conv2d.
-        kernel_size (int or tuple[int]): Same as nn.Conv2d.
-        stride (int or tuple[int]): Same as nn.Conv2d.
-        padding (int or tuple[int]): Same as nn.Conv2d.
-        dilation (int or tuple[int]): Same as nn.Conv2d.
+        kernel_size (int or Tuple[int]): Same as nn.Conv2d.
+        stride (int or Tuple[int]): Same as nn.Conv2d.
+        padding (int or Tuple[int]): Same as nn.Conv2d.
+        dilation (int or Tuple[int]): Same as nn.Conv2d.
         groups (int): Same as nn.Conv2d.
         bias (bool or str): If specified as `auto`, it will be decided by the
             norm_cfg. Bias will be set as True if norm_cfg is None, otherwise
@@ -337,10 +337,10 @@ class ModulatedDeformConvPack(ModulatedDeformConv):
     Args:
         in_channels (int): Same as nn.Conv2d.
         out_channels (int): Same as nn.Conv2d.
-        kernel_size (int or tuple[int]): Same as nn.Conv2d.
-        stride (int or tuple[int]): Same as nn.Conv2d.
-        padding (int or tuple[int]): Same as nn.Conv2d.
-        dilation (int or tuple[int]): Same as nn.Conv2d.
+        kernel_size (int or Tuple[int]): Same as nn.Conv2d.
+        stride (int or Tuple[int]): Same as nn.Conv2d.
+        padding (int or Tuple[int]): Same as nn.Conv2d.
+        dilation (int or Tuple[int]): Same as nn.Conv2d.
         groups (int): Same as nn.Conv2d.
         bias (bool or str): If specified as `auto`, it will be decided by the
             norm_cfg. Bias will be set as True if norm_cfg is None, otherwise

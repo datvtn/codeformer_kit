@@ -119,13 +119,13 @@ class PositionEmbeddingSine(nn.Module):
             mask = torch.zeros((x.size(0), x.size(2), x.size(3)), device=x.device, dtype=torch.bool)
         return mask
 
-    def _get_position_embeddings(self, not_mask: Tensor) -> tuple[Tensor, Tensor]:
+    def _get_position_embeddings(self, not_mask: Tensor) -> Tuple[Tensor, Tensor]:
         """Calculate cumulative sums for x and y positional embeddings."""
         y_embed = not_mask.cumsum(1, dtype=torch.float32)
         x_embed = not_mask.cumsum(2, dtype=torch.float32)
         return y_embed, x_embed
 
-    def _normalize_embeddings(self, x_embed: Tensor, y_embed: Tensor) -> tuple[Tensor, Tensor]:
+    def _normalize_embeddings(self, x_embed: Tensor, y_embed: Tensor) -> Tuple[Tensor, Tensor]:
         """Normalize positional embeddings if required."""
         eps = 1e-6
         y_embed = y_embed / (y_embed[:, -1:, :] + eps) * self.scale
