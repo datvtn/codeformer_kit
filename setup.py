@@ -4,7 +4,7 @@ import re
 import sys
 from shutil import rmtree
 from typing import List
-
+from torch.utils.cpp_extension import BuildExtension, CppExtension, CUDAExtension
 from setuptools import Command, find_packages, setup
 
 # Package meta-data.
@@ -22,6 +22,31 @@ def get_version():
     with io.open(version_file, encoding="utf-8") as f:
         return re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]', f.read(), re.M).group(1)
 
+def make_cuda_ext(name, module, sources, sources_cuda=None):
+    if sources_cuda is None:
+        sources_cuda = []
+    define_macros = []
+    extra_compile_args = {'cxx': []}
+
+    # if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+    if  os.getenv('FORCE_CUDA', '0') == '1':
+        define_macros += [('WITH_CUDA', None)]
+        extension = CUDAExtension
+        extra_compile_args['nvcc'] = [
+            '-D__CUDA_NO_HALF_OPERATORS__',
+            '-D__CUDA_NO_HALF_CONVERSIONS__',
+            '-D__CUDA_NO_HALF2_OPERATORS__',
+        ]
+        sources += sources_cuda
+    else:
+        print(f'Compiling {name} without CUDA')
+        extension = CppExtension
+
+    return extension(
+        name=f'{module}.{name}',
+        sources=[os.path.join(*module.split('.'), p) for p in sources],
+        define_macros=define_macros,
+        extra_compile_args=extra_compile_args)
 
 # What packages are required for this module to be executed?
 try:
@@ -88,6 +113,28 @@ class UploadCommand(Command):
         sys.exit()
 
 
+if '--cuda_ext' in sys.argv:
+    ext_modules = [
+        make_cuda_ext(
+            name='deform_conv_ext',
+            module='ops.dcn',
+            sources=['src/deform_conv_ext.cpp'],
+            sources_cuda=['src/deform_conv_cuda.cpp', 'src/deform_conv_cuda_kernel.cu']),
+        make_cuda_ext(
+            name='fused_act_ext',
+            module='ops.fused_act',
+            sources=['src/fused_bias_act.cpp'],
+            sources_cuda=['src/fused_bias_act_kernel.cu']),
+        make_cuda_ext(
+            name='upfirdn2d_ext',
+            module='ops.upfirdn2d',
+            sources=['src/upfirdn2d.cpp'],
+            sources_cuda=['src/upfirdn2d_kernel.cu']),
+    ]
+    sys.argv.remove('--cuda_ext')
+else:
+    ext_modules = []
+
 setup(
     name=name,
     version=version,
@@ -100,6 +147,7 @@ setup(
     packages=find_packages(exclude=["tests", "docs", "images"]),
     install_requires=required,
     extras_require=extras,
+    include_package_data=True,
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
@@ -111,4 +159,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     cmdclass={"upload": UploadCommand},
+    setup_requires=['cython', 'numpy'],
+    ext_modules=ext_modules,
+    cmdclass={'build_ext': BuildExtension},
 )

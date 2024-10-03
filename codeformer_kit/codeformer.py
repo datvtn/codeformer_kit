@@ -5,7 +5,7 @@ from torchvision.transforms.functional import normalize
 
 from datvtn_nn_kit.nn import img_to_tensor, tensor_to_img
 from datvtn_nn_kit.utils import load_file_from_url
-from codeformer_kit.utils.registry import ARCH_REGISTRY
+from codeformer_kit.archs.codeformer_arch import CodeFormer
 
 class CodeformerProcessor:
     def __init__(self, model_dir: str = "./checkpoints", device: torch.device = None):
@@ -17,7 +17,7 @@ class CodeformerProcessor:
 
         self._device = device if device is not None else torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-        self.model = ARCH_REGISTRY.get("CodeFormer")(
+        self.model = CodeFormer(
                         dim_embd=512,
                         codebook_size=1024,
                         n_head=8,
