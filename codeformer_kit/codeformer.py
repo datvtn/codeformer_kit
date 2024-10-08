@@ -1,6 +1,8 @@
 import os
+import cv2
 import torch
 import numpy as np
+from typing import List
 from torchvision.transforms.functional import normalize
 
 from datvtn_nn_kit.nn import img_to_tensor, tensor_to_img
@@ -29,6 +31,7 @@ class CodeformerProcessor:
         self.model.load_state_dict(checkpoint)
         self.model.eval()
 
+    @torch.no_grad()
     def process(self, cropped_face: np.ndarray, fidelity: float = 0.5):
         cropped_face_t = img_to_tensor(
             cropped_face / 255.0, bgr2rgb=True, float32=True
@@ -37,11 +40,10 @@ class CodeformerProcessor:
         cropped_face_t = cropped_face_t.unsqueeze(0).to(self._device)
 
         try:
-            with torch.no_grad():
-                output = self.model(
-                    cropped_face_t, w=fidelity, adain=True
-                )[0]
-                restored_face = tensor_to_img(output, rgb2bgr=True, min_max=(-1, 1))
+            output = self.model(
+                cropped_face_t, w=fidelity, adain=True
+            )[0]
+            restored_face = tensor_to_img(output, rgb2bgr=True, min_max=(-1, 1))
             del output
             torch.cuda.empty_cache()
         except RuntimeError as error:
@@ -52,3 +54,25 @@ class CodeformerProcessor:
 
         restored_face = restored_face.astype("uint8")
         return restored_face
+
+    @torch.no_grad()
+    def process_batch(self, imgs: List[np.ndarray], fidelity: float=0.5):
+        # cropped_faces = [cv2.blur(cv2.resize(img, (512, 512)) if img.shape != (512, 512) else img, (10, 10)) for img in imgs]
+        cropped_faces = [cv2.resize(img, (512, 512)) if img.shape != (512, 512) else img for img in imgs]
+        # prepare data
+        cropped_faces_t = torch.stack([img_to_tensor(face / 255., bgr2rgb=True, float32=True) for face in cropped_faces])
+        normalize(cropped_faces_t, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True)
+        cropped_faces_t = cropped_faces_t.to(self.device)
+
+        try:
+            outputs = self.model(
+                cropped_faces_t, w=fidelity, adain=True
+            )[0]
+            # convert to image
+            restored_faces = [tensor_to_img(output.squeeze(0), rgb2bgr=True, min_max=(-1, 1)) for output in outputs]
+        except RuntimeError as error:
+            print(f'\tFailed inference for GFPGAN: {error}.')
+            restored_faces = cropped_faces
+
+        restored_faces = [face.astype('uint8') for face in restored_faces]
+        return restored_faces
