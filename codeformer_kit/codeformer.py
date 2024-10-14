@@ -33,6 +33,9 @@ class CodeformerProcessor:
 
     @torch.no_grad()
     def process(self, cropped_face: np.ndarray, fidelity: float = 0.5):
+        if cropped_face.shape[:2] != (512, 512):
+            cropped_face = cv2.resize(cropped_face, (512, 512))
+
         cropped_face_t = img_to_tensor(
             cropped_face / 255.0, bgr2rgb=True, float32=True
         )
@@ -58,11 +61,11 @@ class CodeformerProcessor:
     @torch.no_grad()
     def process_batch(self, imgs: List[np.ndarray], fidelity: float=0.5):
         # cropped_faces = [cv2.blur(cv2.resize(img, (512, 512)) if img.shape != (512, 512) else img, (10, 10)) for img in imgs]
-        cropped_faces = [cv2.resize(img, (512, 512)) if img.shape != (512, 512) else img for img in imgs]
+        cropped_faces = [cv2.resize(img, (512, 512)) if img.shape[:2] != (512, 512) else img for img in imgs]
         # prepare data
         cropped_faces_t = torch.stack([img_to_tensor(face / 255., bgr2rgb=True, float32=True) for face in cropped_faces])
         normalize(cropped_faces_t, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True)
-        cropped_faces_t = cropped_faces_t.to(self.device)
+        cropped_faces_t = cropped_faces_t.to(self._device)
 
         try:
             outputs = self.model(
